@@ -1,40 +1,42 @@
 import { json } from 'body-parser';
-import express, { Application, Request, Response } from 'express';
+import express, { Application, NextFunction, Request, Response } from 'express';
 import { Query } from "express-serve-static-core";
 import { User } from "./model/user.type";
-var config = require('../vandapa1_kpi.json');
-var mysql = require('mysql');
-// const mysql = require('mysql2');
-const server: Application = express();
-const PORT: number = 3001;
-const con = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'vandapa1_kpi',
-    port: '3306'
-});
-server.use(express.json());
-export interface TypeRequestQuery<T extends Query> extends Express.Request {
-    query: T;
-}
-server.post('/login', async (req: Request, res: Response) => {
-    try {
-        const { email, password } = req.body;
-        const rows = con.query(
-            `SELECT * FROM employee WHERE Em_Email = ?`,
-            [email]
+// import cors from 'cors'
+// import multer from 'multer'
+import fileController from './controllers/FileController'
+// // const upload = multer()
+const port = 3001;
+const app = express();
+var multer = require('multer');
+var cors = require('cors');
 
-        )
-        res.status(201).json(rows);
-    } catch (e) {
+app.use(cors())
+var storage = multer.diskStorage({
+    destination: function (req: any, file: any, cb: any) {
+        cb(null, 'src/uploads')
+    },
+    filename: function (req: any, file: any, cb: any) {
+        cb(null, Date.now() + '-' + file.originalname)
 
     }
+})
+
+var upload = multer({ storage: storage }).single('file')
+
+app.post('/upload', function (req, res) {
+
+    upload(req, res, function (err: any) {
+        if (err instanceof multer.MulterError) {
+            return res.status(500).json(err)
+        } else if (err) {
+            return res.status(500).json(err)
+        }
+        return res.status(200).send(req.file)
+
+    })
+
 });
-
-
-server.get('/api', (req: TypeRequestQuery<User>, res: Response) => res.json(req.query.username));
-
-server.listen(PORT, () => {
-    console.log(`Server is running at http://localhost:${PORT}`);
-});
+app.listen(port, () => {
+    console.log(`listening at http://localhost:${port}`)
+})
