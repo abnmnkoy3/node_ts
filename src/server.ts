@@ -14,10 +14,10 @@ var cors = require('cors');
 app.use(cors())
 var storage = multer.diskStorage({
     destination: function (req: any, file: any, cb: any) {
-        cb(null, 'src/uploads')
+        cb(null, 'C:/xampp/htdocs/ImageSave')
     },
     filename: function (req: any, file: any, cb: any) {
-        cb(null, Date.now() + '-' + file.originalname)
+        cb(null,file.originalname)
 
     }
 })
