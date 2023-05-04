@@ -59,6 +59,17 @@ app.post('/disabled_chemical', function (req: any, res: any) {
     })
 })
 
+app.post('/remake_chemical', function (req: any, res: any) {
+    const id = req.body.id
+    db.query(`UPDATE test_insert_chemical SET status = '1' WHERE id = ${id}`, (err: any, result: any) => {
+        if (err) {
+            console.log(err);
+        } else {
+            return res.json({ message: 'ลบข้อมูลเสร็จสิ้น' });
+        }
+    })
+})
+
 
 app.post('/data_edit', function (req: any, res: any) {
     const id = req.body.id
