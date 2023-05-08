@@ -1,5 +1,9 @@
 import express, { Application, NextFunction, Request, Response } from 'express';
-const port = 3001;
+import { Server } from 'socket.io';
+import { createServer } from "http";
+import http from "http";
+const port = 3000;
+
 const app = express();
 var multer = require('multer');
 const mysql = require('mysql');
@@ -10,6 +14,8 @@ const db = mysql.createConnection({
     password: '',
     database: 'vandapa1_kpi'
 })
+// const io = new socketio.Server(server);
+
 app.use(cors())
 app.use(express.json());
 var storage = multer.diskStorage({
@@ -23,6 +29,61 @@ var storage = multer.diskStorage({
 })
 
 var upload = multer({ storage: storage }).single('file')
+
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"],
+    }
+});
+
+io.on("connection", (socket) => {
+    console.log('user is connected');
+
+    
+    // Room_test(socket)
+    socket.on('update-data', () => {
+        socket.emit('update-data-success','update-data-success');
+    })
+    socket.on('disconnect', () => {
+        console.log('user is disconnected');
+    })
+})
+
+server.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+});
+
+
+
+
+
+/* socket.io demo 08/05/2566 */
+
+// const httpServer = createServer();
+// const io = new Server(httpServer, {
+//     cors: {
+//         origin: "*",
+//         allowedHeaders: ["my-custom-header"],
+//         credentials: true
+//     }
+// });
+// httpServer.listen(3000);
+
+// io.on("connection", (socket) => {
+
+//     socket.on('test', (arg) => {
+//         socket.emit('tablet', 'text_table');
+//         console.log('table')
+
+//     })
+
+// })
+
+
+/* socket.io demo 08/05/2566 */
+
 
 app.post('/upload', function (req, res) {
 
@@ -192,6 +253,7 @@ app.post('/update_data', function (req: any, res: any) {
                 console.log(err);
             } else {
                 return res.json(result);
+                console.log('test')
             }
         })
     }
@@ -346,6 +408,3 @@ app.post('/update_data_reject', function (req: any, res: any) {
     }
 })
 
-app.listen(port, () => {
-    console.log(`listening at http://localhost:${port}`)
-})
